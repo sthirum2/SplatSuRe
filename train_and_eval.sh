@@ -2,7 +2,7 @@
 
 set -e
 
-scene='Train'
+scene='Museum'
 upscale=4
 ratio_threshold=1.1
 weight_maps_dirname=weight_maps
@@ -23,15 +23,15 @@ if [[ $scene = @(drjohnson|playroom) ]]; then
 fi
 
 # Train LR model
-python train_lr.py -s ${data_dir} -m ${output_dir}/lr/${scene} -r ${r} --eval
+# PYTHONPATH=. python src/train_lr.py -s ${data_dir} -m ${output_dir}/lr/${scene} -r ${r} --eval
 
 # Get weight maps
-python weight_maps.py -s ${data_dir} -m ${output_dir}/lr/${scene} -r ${r} --eval --weight_maps_dirname ${weight_maps_dirname} --ratio_threshold ${ratio_threshold}
+PYTHONPATH=. python src/weight_maps.py -s ${data_dir} -m ${output_dir}/lr/${scene} -r ${r} --eval --weight_maps_dirname ${weight_maps_dirname} --ratio_threshold ${ratio_threshold}
 
 # Train SR model
-python train.py -s ${data_dir} -m ${output_dir}/${scene} -r 1 --eval --images ${sr_images_dir} --img_ext png --upscale ${upscale} --weight_maps_path ${output_dir}/lr/${scene}/${weight_maps_dirname}
+PYTHONPATH=. python src/train.py -s ${data_dir} -m ${output_dir}/${scene} -r 1 --images ${sr_images_dir} --img_ext png --upscale ${upscale} --weight_maps_path ${output_dir}/lr/${scene}/${weight_maps_dirname}
 
-python render.py --model_path ${output_dir}/${scene} --skip_train --images images -r ${r} --img_ext jpg --upscale ${upscale}
+PYTHONPATH=. python src/render.py --model_path ${output_dir}/${scene} --skip_train --images images -r ${r} --img_ext jpg --upscale ${upscale}
 
 # Metrics
-python metrics.py -m ${output_dir}/${scene}
+PYTHONPATH=. python src/metrics.py -m ${output_dir}/${scene}

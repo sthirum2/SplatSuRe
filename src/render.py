@@ -42,22 +42,27 @@ def render_set(model_path, name, iteration, views, gaussians, pipeline, backgrou
             rendering = rendering[..., rendering.shape[-1] // 2:]
             gt = gt[..., gt.shape[-1] // 2:]
 
-        torchvision.utils.save_image(rendering, os.path.join(render_path, '{0:05d}'.format(idx) + ".png"))
-        torchvision.utils.save_image(gt, os.path.join(gts_path, '{0:05d}'.format(idx) + ".png"))
+        # Render with the same name as the original image, but with a .png extension
+        original_image_name = os.path.splitext(os.path.basename(view.image_name))[0]
+        torchvision.utils.save_image(rendering, os.path.join(render_path, original_image_name + ".png"))
+        torchvision.utils.save_image(gt, os.path.join(gts_path, original_image_name + ".png"))
+
+        # torchvision.utils.save_image(rendering, os.path.join(render_path, '{0:05d}'.format(idx) + ".png"))
+        # torchvision.utils.save_image(gt, os.path.join(gts_path, '{0:05d}'.format(idx) + ".png"))
 
 def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool, separate_sh: bool):
     with torch.no_grad():
         gaussians = GaussianModel(dataset.sh_degree)
         try:
-            scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False, upscale=(None, dataset.upscale), skip_train=True)
+            scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False, upscale=(dataset.upscale, dataset.upscale), skip_train=False)
         except:
             dataset.img_ext = dataset.img_ext.upper()
-            scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False, upscale=(None, dataset.upscale), skip_train=True)
+            scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False, upscale=(dataset.upscale, dataset.upscale), skip_train=False)
 
         bg_color = [1,1,1] if dataset.white_background else [0, 0, 0]
         background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
 
-        for cam in scene.getTestCameras():
+        for cam in scene.getTestCameras() + scene.getTrainCameras():
             cam.image_height = cam.image_height * dataset.upscale
             cam.image_width = cam.image_width * dataset.upscale
             cam.original_image = cam.hr_image.to(cam.data_device)

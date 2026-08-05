@@ -43,7 +43,7 @@ gaussians = GaussianModel(dataset.sh_degree, opt.optimizer_type)
 scene = Scene(dataset, gaussians, load_iteration=args.iterations, shuffle=False)
 
 Ng = gaussians._opacity.shape[0]
-cam = scene.getTestCameras()[0]
+cam = scene.getTrainCameras()[0]
 H, W = cam.image_height, cam.image_width
 num_cams = len(scene.getTrainCameras())
 

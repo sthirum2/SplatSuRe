@@ -10,3 +10,23 @@ outputs_4x
 outputs_8x
 models
 cmmd-pytorch
+# Large generated data / model outputs — do not commit
+data/
+step1/
+step2/
+step3/
+step4/
+step1_v2/
+step2_v2/
+step3_v2/
+step4_v2/
+StableSR/*.ckpt
+StableSR/downloads/
+archive_results/
+logs/
+evaluation/
+StableSR/
+src/clip/
+src/taming-transformers/
+*.bak*
+test_weight_map.png
