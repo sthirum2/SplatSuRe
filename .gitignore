@@ -30,3 +30,8 @@ src/clip/
 src/taming-transformers/
 *.bak*
 test_weight_map.png
+step*_v3/
+data/tandt/Museum_v3/
+progressive_v3_run.log
+progressive_v3_step4_run.log
+progressive_run.log
