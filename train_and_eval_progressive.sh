@@ -51,36 +51,11 @@ run_stablesr () {
 }
 
 rebuild_step_images () {
-  # Remaps stepN's train+test renders (each restarting at 0) back to the
-  # true camera filenames, using the same llffhold=8 split dataset_readers.py
-  # applies internally.
   local render_root=$1
   local out_dir=$2
-  python3 - "$data_dir/images" "$render_root/train/ours_30000/renders" "$render_root/test/ours_30000/renders" "$out_dir" << 'EOF'
-import os, sys
-from PIL import Image
-
-images_dir, train_render_dir, test_render_dir, out_dir = sys.argv[1:5]
-llffhold = 8
-all_names = sorted(os.listdir(images_dir))
-test_names = [n for i, n in enumerate(all_names) if i % llffhold == 0]
-train_names = [n for i, n in enumerate(all_names) if i % llffhold != 0]
-
-train_renders = sorted(os.listdir(train_render_dir))
-test_renders = sorted(os.listdir(test_render_dir))
-assert len(train_renders) == len(train_names), f"{len(train_renders)} vs {len(train_names)}"
-assert len(test_renders) == len(test_names), f"{len(test_renders)} vs {len(test_names)}"
-
-os.makedirs(out_dir, exist_ok=True)
-for render_file, cam_name in zip(train_renders, train_names):
-    im = Image.open(os.path.join(train_render_dir, render_file)).convert("RGB")
-    im.save(os.path.join(out_dir, os.path.splitext(cam_name)[0] + ".jpg"), quality=95)
-for render_file, cam_name in zip(test_renders, test_names):
-    im = Image.open(os.path.join(test_render_dir, render_file)).convert("RGB")
-    im.save(os.path.join(out_dir, os.path.splitext(cam_name)[0] + ".jpg"), quality=95)
-
-print(f"Rebuilt {len(os.listdir(out_dir))} images -> {out_dir}")
-EOF
+  mkdir -p "${out_dir}"
+  cp "${render_root}/train/ours_30000/renders/"*.png "${out_dir}/" 2>/dev/null
+  cp "${render_root}/test/ours_30000/renders/"*.png "${out_dir}/" 2>/dev/null
 }
 
 source "$(conda info --base)/etc/profile.d/conda.sh"
@@ -105,34 +80,34 @@ for step in $(seq 1 ${n_steps}); do
   sr_images_dir=images_step$((step - 1))_StableSR
   [[ $step -eq 1 ]] && sr_images_dir=images_16_2x
 
-  # --- Rebuild this step's input from the previous step's render (steps 2+) ---
+  # Rebuild this step's input from the previous step's render (steps 2+) 
   if [[ $step -gt 1 ]]; then
     rebuild_step_images "step$((step - 1))_v2/${scene}" "${data_dir}/${prev_step_images}"
   fi
 
-  # --- StableSR ---
+  # StableSR 
   if [[ $step -eq 1 ]]; then
     run_stablesr "${data_dir}/images" "${data_dir}/${sr_images_dir}" ${r}
   else
     run_stablesr "${data_dir}/${prev_step_images}" "${data_dir}/${sr_images_dir}" 1
   fi
 
-  # --- Train LR model + weight maps (skip for step 1's raw-image LR, which uses -r; steps 2+ use the previous StableSR images at native res) ---
+  # Train LR model + weight maps (skip for step 1's raw-image LR, which uses -r; steps 2+ use the previous StableSR images at native res) ---
   PYTHONPATH=. python src/train_lr.py -s ${data_dir} -m ${lr_model} -r ${r} --eval --skip_test $( [[ $step -gt 1 ]] && echo "--images ${sr_images_dir} --img_ext jpg" )
 
   PYTHONPATH=. python src/weight_maps.py -s ${data_dir} -m ${lr_model} -r ${r} --eval --weight_maps_dirname ${weight_maps_dirname} --ratio_threshold ${ratio_threshold} $( [[ $step -gt 1 ]] && echo "--images ${sr_images_dir}" )
 
-  # --- Train SR model ---
+  # Train SR model                 
   PYTHONPATH=. python src/train.py -s ${data_dir} -m ${sr_model} -r 1 --eval --skip_test --images ${sr_images_dir} --img_ext jpg --upscale ${upscale} --weight_maps_path ${lr_model}/${weight_maps_dirname}
 
-  # --- Render at this step's target resolution ---
+  # Render at this step's target resolution ---
   # render.py's own test/ours_30000/{renders,gt} pair already compares against
   # the TRUE original photo (downsampled to this step's native resolution) --
   # confirmed via pixel diff (0.0 vs real photo, ~22 vs StableSR training input).
   # No separate render_original_test_split.py / rebuilt-gt step needed.
   PYTHONPATH=. python src/render.py --model_path ${sr_model} --images images -r ${r_render} --img_ext jpg --upscale 1
 
-  # --- Metrics: compare stepN's test renders against the real photo, same resolution ---
+  # Metrics: compare stepN's test renders against the real photo, same resolution 
   PYTHONPATH=. python src/metrics.py -m ${sr_model}/test/ours_30000
 done
 

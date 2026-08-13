@@ -38,19 +38,13 @@ def evaluate(model_path):
         gt_img = tf.to_tensor(Image.open(join(gt_path, name))).cpu()[:3, :, :]
         
         if render_img.shape != gt_img.shape:
-            min_h = min(render_img.shape[1], gt_img.shape[1])
-            min_w = min(render_img.shape[2], gt_img.shape[2])
-            render_img = render_img[:, :min_h, :min_w]
-            gt_img = gt_img[:, :min_h, :min_w]
+            raise ValueError(f"Shape mismatch for {name}: render {tuple(render_img.shape)} vs gt {tuple(gt_img.shape)}")
 
         psnrs.append(psnr(render_img, gt_img).item())
-        try:
-            from skimage.metrics import structural_similarity as ssim_func
-            r_np = render_img.permute(1, 2, 0).cpu().numpy()
-            g_np = gt_img.permute(1, 2, 0).cpu().numpy()
-            ssims.append(ssim_func(r_np, g_np, channel_axis=-1, data_range=1.0))
-        except:
-            ssims.append(0.7789444)
+        from skimage.metrics import structural_similarity as ssim_func
+        r_np = render_img.permute(1, 2, 0).cpu().numpy()
+        g_np = gt_img.permute(1, 2, 0).cpu().numpy()
+        ssims.append(ssim_func(r_np, g_np, channel_axis=-1, data_range=1.0))
         try:
             # Prepare tensors for LPIPS [B, C, H, W]
             im0 = render_img.unsqueeze(0).cpu()

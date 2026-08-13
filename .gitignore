@@ -35,3 +35,6 @@ data/tandt/Museum_v3/
 progressive_v3_run.log
 progressive_v3_step4_run.log
 progressive_run.log
+outputs_baseline/
+outputs_baseline_up*/
+baseline_comparison.log

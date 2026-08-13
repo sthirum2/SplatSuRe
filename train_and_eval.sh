@@ -29,7 +29,7 @@ fi
 PYTHONPATH=. python src/weight_maps.py -s ${data_dir} -m ${output_dir}/lr/${scene} -r ${r} --eval --weight_maps_dirname ${weight_maps_dirname} --ratio_threshold ${ratio_threshold}
 
 # Train SR model
-PYTHONPATH=. python src/train.py -s ${data_dir} -m ${output_dir}/${scene} -r 1 --images ${sr_images_dir} --img_ext png --upscale ${upscale} --weight_maps_path ${output_dir}/lr/${scene}/${weight_maps_dirname}
+PYTHONPATH=. python src/train.py -s ${data_dir} -m ${output_dir}/${scene} -r 1 --eval --images ${sr_images_dir} --img_ext png --upscale ${upscale} --weight_maps_path ${output_dir}/lr/${scene}/${weight_maps_dirname}
 
 PYTHONPATH=. python src/render.py --model_path ${output_dir}/${scene} --skip_train --images images -r ${r} --img_ext jpg --upscale ${upscale}
 
