@@ -12,14 +12,6 @@ models
 cmmd-pytorch
 # Large generated data / model outputs — do not commit
 data/
-step1/
-step2/
-step3/
-step4/
-step1_v2/
-step2_v2/
-step3_v2/
-step4_v2/
 StableSR/*.ckpt
 StableSR/downloads/
 archive_results/
@@ -30,11 +22,12 @@ src/clip/
 src/taming-transformers/
 *.bak*
 test_weight_map.png
-step*_v3/
 data/tandt/Museum_v3/
 progressive_v3_run.log
 progressive_v3_step4_run.log
 progressive_run.log
 outputs_baseline/
-outputs_baseline_up*/
+outputs_baseline_*_up*/
 baseline_comparison.log
+
+step*_*/

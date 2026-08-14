@@ -2,7 +2,7 @@
 
 set -e
 
-scene='Museum'
+scene=${1:-Museum}
 ratio_threshold=1.1
 weight_maps_dirname=weight_maps
 upscale=2
@@ -66,7 +66,7 @@ for step in $(seq 1 ${n_steps}); do
   idx=$((step - 1))
   r=${r_values[$idx]}
   r_render=${r_render_values[$idx]}
-  output_dir=step${step}_v2
+  output_dir=step${step}_${scene}
   lr_model=${output_dir}/lr/${scene}
   sr_model=${output_dir}/${scene}
 

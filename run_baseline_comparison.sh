@@ -4,7 +4,7 @@ set -e
 
 scene='Museum'
 ratio_threshold=1.1
-lr_weight_maps_path=step1_v2/lr/Museum/weight_maps   # reuse progressive Step 1's LR model (same r=16 --eval)
+lr_weight_maps_path=step1_${scene}/lr/${scene}/weight_maps   # reuse progressive Step 1's LR model (same r=16 --eval)
 data_dir=data/tandt/${scene}_v2
 
 splatsure_env=splatsure
@@ -41,7 +41,7 @@ conda activate ${splatsure_env}
 for upscale in 2 4 8 16; do
   r_render=${r_render_for_upscale[$upscale]}
   sr_images_dir=${data_dir}/images_SR_up${upscale}
-  output_dir=outputs_baseline_up${upscale}/${scene}
+  output_dir=outputs_baseline_${scene}_up${upscale}/${scene}
 
   run_stablesr "${data_dir}/images" "${sr_images_dir}" ${upscale}
 
