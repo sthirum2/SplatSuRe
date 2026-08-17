@@ -2,7 +2,7 @@
 
 set -e
 
-scene='Museum'
+scene=${1:-Museum}
 ratio_threshold=1.1
 lr_weight_maps_path=step1_${scene}/lr/${scene}/weight_maps   # reuse progressive Step 1's LR model (same r=16 --eval)
 data_dir=data/tandt/${scene}_v2

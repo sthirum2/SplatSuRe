@@ -82,7 +82,7 @@ for step in $(seq 1 ${n_steps}); do
 
   # Rebuild this step's input from the previous step's render (steps 2+) 
   if [[ $step -gt 1 ]]; then
-    rebuild_step_images "step$((step - 1))_v2/${scene}" "${data_dir}/${prev_step_images}"
+    rebuild_step_images "step$((step - 1))_${scene}/${scene}" "${data_dir}/${prev_step_images}"
   fi
 
   # StableSR 
