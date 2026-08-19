@@ -33,3 +33,5 @@ baseline_comparison.log
 step*_*/
 baseline_Truck_run.log
 progressive_Truck_run.log
+baseline_Train_run.log
+progressive_Train_run.log
